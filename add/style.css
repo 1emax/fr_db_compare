@@ -37,3 +37,14 @@ table.tablesorter thead tr .headerSortDown {
 table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
 background-color: #8dbdd8;
 }
+
+div#search {
+	margin: 0 auto;
+	display: block;
+	width: 200px;
+	position: relative;
+}
+
+tr.hide {
+	display: none;
+}

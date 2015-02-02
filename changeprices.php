@@ -29,6 +29,47 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 		echo json_encode(array('error'=>'Не удалось обновить данные'));
 	}
 
+} else if(array_key_exists('move', $_GET) && $_GET['move'] != '') {
+	$moveTo = $_GET['move'];
+
+	if($moveTo != 'go_away' && $moveTo != 'to_first') {
+		echo json_encode(array('error'=>'Выбрана неправильная база данных'));
+		exit();
+	}
+
+	$dblocation1 = "localhost";
+	$dbname1 = "xml1cbase";
+	$dbuser1 = "root";
+	$dbpasswd1 = "";
+	$dbMoveConnect = mysqli_connect($dblocation1,$dbuser1,$dbpasswd1, $dbname1);
+
+	if (!$dbMoveConnect) {
+		echo json_encode(array('error'=>'Не удалось подключиться к базе'));
+		exit();
+	} else {
+		mysqli_query($dbMoveConnect, "SET NAMES 'utf8'");
+	}
+
+	$elements = json_decode($_POST['val'], true);
+	$subQ = implode($elements, '\',\'');
+	$query = 'INSERT INTO ' .$moveTo.' SELECT * FROM xml1c_all_products where id in (\''.$subQ.'\')';
+	$result = mysqli_query($dbMoveConnect, $query);
+	if ($result) {
+		if($moveTo == 'go_away') {
+			$query = 'DELETE FROM xml1c_all_products where  id in (\''.$subQ.'\')';
+			$result = mysqli_query($dbMoveConnect, $query);
+			if ($result) {
+				echo json_encode(array('elements' => $elements, 'action'=>'remove'));				
+			} else {
+				echo json_encode(array('error'=>'Не удалось удалить скопированные данные'));
+			}
+		} else {
+			echo json_encode(array('elements' => $elements, 'action'=>'highlight'));
+		}
+	} else {
+		echo json_encode(array('error'=>'Не удалось обновить данные'));
+	}
+
 }
 
 function createUpdQ($elements) {
