@@ -62,18 +62,19 @@ if($result)
 {	
 	$count=0;
 	echo "<table border=1 width='100%' class='tablesorter' id='myTable'>";
-	echo "<thead><tr><th>№</th><th>ID на сайте</th><th>Код1с товара</th><th>Наименование</th><th>Цена на сайте</th><th>Цена в прайсе 1С</th><th>Кол-во на сайте</th></thead><tbody>";
+	echo "<thead><tr><th></th><th>Код1с товара</th><th>Наименование</th><th>Цена на сайте</th><th>Цена в прайсе 1С</th><th>Кол-во на сайте</th></thead><tbody>";
 
 
-	$db1Sku = rowsToAssoc($result);
+	$db1Sku = rowsToAssoc($result, 'sku');
 
-	$query_1c = 'SELECT price,old_del,stock_1_perovo FROM xml1cbase.xml1c_all_products WHERE code1c in (\''.implode(array_keys($db1Sku), "','").'\')';
+	$query_1c = 'SELECT price,old_del,stock_1_perovo, code1c FROM xml1cbase.xml1c_all_products WHERE code1c in (\''.implode(array_keys($db1Sku), "','").'\')';
+
 	$result_1c = mysqli_query($dbconnect2, $query_1c);
 	$notEmptyQuery = mysqli_num_rows($result_1c)>0 ? true : false;
 
 	if($result_1c && $notEmptyQuery){
 		//echo mysqli_num_rows($result_1c) . '<br>';
-		$db_1C = rowsToAssoc($result_1c);
+		$db_1C = rowsToAssoc($result_1c, 'code1c');
 		selDiffPrice($db1Sku, $db_1C);
 	  // $price1c = mysqli_result($result_1c,0,'price');
 	  // $old_del1c = mysqli_result($result_1c,0,'old_del');
@@ -148,21 +149,22 @@ echo "finish";
 
 
 function selDiffPrice($db, $db1c) {
-	foreach ($db1c as $sku => $el) {
-			print_r($db[$sku]);
+	foreach ($db1c as $sku => $el_1c) {
+			// print_r($db[$sku]);
 
-		if ($el_1c['price'] != $db[$sku]['price']) {
-			//echo '<tr><input type="checkbox" name="'.$db[$sku]['product_id'].'"></td><td>'.$db[$sku]['name'].'</td><td>'.$db[$sku]['sku'].'</td><td>'.$db[$sku]['price'].'</td><td>'.$el_1c['price'].'</td><td>'.$db[$sku]['quantity'].'</td></tr>';	
+		if ($el_1c['price'] != $db[$sku]['price'] && !is_null($db[$sku]['price']) && !is_null($el_1c['price'])) {
+			//if (empty($db[$sku]['product_id'])) print_r($db[$sku]);
+			echo '<tr><td><input type="checkbox" name="'.$db[$sku]['product_id'].'"></td><td>'.$db[$sku]['name'].'</td><td>'.$db[$sku]['sku'].'</td><td>'.$db[$sku]['price'].'</td><td>'.$el_1c['price'].'</td><td>'.$db[$sku]['quantity'].'</td></tr>' . "\n";	
 		}
 	}
 }
 
-function rowsToAssoc($dbRows) {
+function rowsToAssoc($dbRows, $rName) {
 	$dbRes = array();
 
 	while ($row = mysqli_fetch_assoc($dbRows))
 	{
-		$dbRes[$row['sku']] = $row;
+		$dbRes[$row[$rName]] = $row;
 	}
 
 	return $dbRes;
