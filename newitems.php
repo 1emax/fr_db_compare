@@ -53,18 +53,18 @@ if($result)
 	$count=0;
 	echo '<form type="post">';
 	echo '<table border="1" width="100%" class="tablesorter" id="myTable">';
-	echo '<thead><tr><th></th><th>Код1с товара</th><th>Наименование</th><th>Цена на сайте</th><th>Цена в прайсе 1С</th><th>Кол-во на сайте</th></thead><tbody>';
+	echo '<thead><tr><th></th><th>Наименование</th><th>Цена в прайсе 1С</th><th>Кол-во на складе</th></thead><tbody>';
 
 	$db1Sku = rowsToAssoc($result, 'sku');
 
-	$query_1c = 'SELECT price,old_del,stock_1_perovo, code1c FROM xml1cbase.xml1c_all_products WHERE code1c in (\''.implode(array_keys($db1Sku), "','").'\')';
-
+	$query_1c = 'SELECT price,name, stock_all, old_del,stock_1_perovo, code1c FROM xml1cbase.xml1c_all_products WHERE code1c IS NOT NULL AND code1c NOT IN (\''.implode(array_keys($db1Sku), "','").'\')';
+// echo $query_1c;
 	$result_1c = mysqli_query($dbconnect2, $query_1c);
 	$notEmptyQuery = mysqli_num_rows($result_1c)>0 ? true : false;
 
 	if($result_1c && $notEmptyQuery){
 		$db_1C = rowsToAssoc($result_1c, 'code1c');
-		selDiffPrice($db1Sku, $db_1C);
+		selDiffPrice('', $db_1C);
 	}
 	else if(!$notEmptyQuery){
 	  echo 'Записей с такими SKU не найдено';
@@ -80,7 +80,7 @@ if($result)
 
 mysqli_close($dbconnect1);
 mysqli_close($dbconnect2);
-echo '<br><input type="submit" name="change_prices" id="change_prices" value="Обновить цены"></form><br>';
+echo '<br><input type="submit" name="to_first" id="to_first" value="Выставить в первую очередь"> &nbsp;&nbsp;<input type="submit" name="go_away" id="go_away" value="Не нужные товары"></form><br>';
 echo "finish";
 
 
@@ -88,9 +88,9 @@ function selDiffPrice($db, $db1c) {
 	foreach ($db1c as $sku => $el_1c) {
 			// print_r($db[$sku]);
 
-		if ($el_1c['price'] != $db[$sku]['price'] && !is_null($db[$sku]['price']) && !is_null($el_1c['price'])) {
-			echo '<tr><td><input type="checkbox" name="'.$db[$sku]['product_id'].'" id="pr'.$db[$sku]['product_id'].'"></td><td>'.$db[$sku]['name'].'</td><td>'.$db[$sku]['sku'].'</td><td class="oldprice">'.$db[$sku]['price'].'</td><td class="newprice">'.$el_1c['price'].'</td><td>'.$db[$sku]['quantity'].'</td></tr>' . "\n";	
-		}
+		// if ($el_1c['price'] != $db[$sku]['price'] && !is_null($db[$sku]['price']) && !is_null($el_1c['price'])) {
+			echo '<tr><td><input type="checkbox" name="'.$el_1c['product_id'].'" id="pr'.$el_1c['product_id'].'"></td><td>'.$el_1c['name'].'</td><td class="oldprice">'.$el_1c['price'].'</td><td>'.$el_1c['stock_all'].'</td></tr>' . "\n";	
+		// }
 	}
 }
 
