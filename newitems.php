@@ -93,7 +93,7 @@ function selDiffPrice($db, $db1c, &$texts, $frst) {
 		if(isset($texts) && is_array($texts)) $texts[$el_1c['id']] = $el_1c['name'];
 		if(isset($frst) &&  array_key_exists($el_1c['id'], $frst) ) $class='highlight';
 		// if ($el_1c['price'] != $db[$sku]['price'] && !is_null($db[$sku]['price']) && !is_null($el_1c['price'])) {
-			echo '<tr class="elem"><td class="'.$class.'"><input type="checkbox" class="checker visible" name="'.$el_1c['id'].'" id="pr'.$el_1c['id'].'"></td><td class="'.$class.'">'.$el_1c['name'].'</td><td class="oldprice '.$class.'">'.$el_1c['price'].'</td><td class="'.$class.'">'.$el_1c['stock_all'].'</td></tr>' . "\n";	
+			echo '<tr class="elem visible"><td class="'.$class.'"><input type="checkbox" class="checker" name="'.$el_1c['id'].'" id="pr'.$el_1c['id'].'"></td><td class="'.$class.'">'.$el_1c['name'].'</td><td class="oldprice '.$class.'">'.$el_1c['price'].'</td><td class="'.$class.'">'.$el_1c['stock_all'].'</td></tr>' . "\n";	
 		// }
 	}
 }

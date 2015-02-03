@@ -34,24 +34,11 @@ echo '	<script type="text/javascript" id="js">$(document).ready(function() {
 	});
 }); </script> ';
 
-$tableName = 'to_first';
-if(isset($_GET['table']) && $_GET['table'] != '') $tableName = $_GET['table'];
 
-$query = 'SELECT * FROM '.$tableName;
+$query = 'SELECT * FROM to_first';
 $result = mysqli_query($dbconnect2, $query);
 
-$lnk = '';
-switch ($tableName) {
-	case 'go_away':
-		$lnk = 'to_first';
-		break;
-	
-	default:
-		$lnk = 'go_away';
-		break;
-}
-echo 'Переключиться на таблицу <a href="?table=' . $lnk . '">'.$lnk.'</a><br>';
-echo '<h2>Таблица "' .$tableName.'"</h2><br>';
+
 
 if($result)
 {	
