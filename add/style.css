@@ -48,3 +48,11 @@ div#search {
 tr.hide {
 	display: none;
 }
+
+table.tablesorter td.highlight {
+	background-color:yellow;
+}
+
+#search input[type="button"] {
+	cursor: pointer;
+}

@@ -16,8 +16,20 @@ $(document).ready(function ()
 		var chkdVal = $(e.target).prop('checked');
 		$('tr.elem.visible .checker').prop('checked', chkdVal);
 	});
+	
+	$('#clearsearch').on('click', function(e) {
+		e.preventDefault();
+		$('tr.elem').removeClass('hide').addClass('visible');
 
-	$('#search>input').on('keypress', function(e) {
+	});
+
+	$('#searchmask').on('click', function(e) {
+		var event = jQuery.Event("keypress");
+		event.keyCode = 13;
+		$('#search>input#s').trigger(event);
+	});
+
+	$('#search>input#s').on('keypress', function(e) {
 		var keycode = (e.keyCode ? e.keyCode : e.which);
 
 		if(keycode == '13'){
@@ -159,7 +171,7 @@ function hasText(text) {
 	var matchText = [];
 
 	for( var i in colTexts) {
-		if(colTexts[i].indexOf(text) != -1) {
+		if(colTexts[i].indexOf(text) != -1 || colTexts[i].toLowerCase().indexOf(text) != -1) {
 			matchText.push(i);			
 		}
 	}

@@ -16,7 +16,7 @@ $dbconnect1 = mysqli_connect($dblocation1,$dbuser1,$dbpasswd1, $dbname1);
 if (!$dbconnect1) {
 	echo "Не удалось подключиться к базе1";	exit();
 }
-
+	
 //Это база товаров 1С
 $dblocation2 = "localhost";
 $dbname2 = "xml1cbase";
@@ -51,20 +51,21 @@ $result = mysqli_query($dbconnect1, $query);
 if($result)
 {	
 	$count=0;
-	echo '<div id="search"><input type="text" placeholder="Поиск"></div><br><form type="post">';
+	echo '<div id="search"><input type="text" id="s" placeholder="Поиск"><br><input type="button" id="searchmask" value="Отметить по маске">&nbsp;&nbsp<input type="button" id="clearsearch" value="X"></div><form type="post">';
 	echo '<table border="1" width="100%" class="tablesorter" id="myTable">';
 	echo '<thead><tr><th><input type="checkbox" id="select_all"></th><th>Наименование</th><th>Цена в прайсе 1С</th><th>Кол-во на складе</th></thead><tbody>';
 
 	$db1Sku = rowsToAssoc($result, 'sku');
 
-	$query_1c = 'SELECT id, price,name, stock_all, old_del,stock_1_perovo, code1c FROM xml1cbase.xml1c_all_products WHERE code1c IS NOT NULL AND code1c NOT IN (\''.implode(array_keys($db1Sku), "','").'\')';
+	$query_1c = 'SELECT 1c.id, 1c.price,1c.name, 1c.stock_all, 1c.old_del,1c.stock_1_perovo, 1c.code1c FROM xml1cbase.xml1c_all_products as 1c WHERE 1c.code1c IS NOT NULL AND 1c.code1c NOT IN (\''.implode(array_keys($db1Sku), "','").'\') AND 1c.id NOT IN (SELECT id FROM go_away)';
 // echo $query_1c;
 	$result_1c = mysqli_query($dbconnect2, $query_1c);
+	$frst = mysqli_query($dbconnect2, 'SELECT t.id FROM to_first as t JOIN xml1c_all_products as 1c ON t.id=1c.id');
 	$notEmptyQuery = mysqli_num_rows($result_1c)>0 ? true : false;
 
 	if($result_1c && $notEmptyQuery){
 		$db_1C = rowsToAssoc($result_1c, 'code1c');
-		selDiffPrice('', $db_1C, $texts);
+		selDiffPrice('', $db_1C, $texts, rowsToAssoc($frst, 'id'));
 	}
 	else if(!$notEmptyQuery){
 	  echo 'Записей с такими SKU не найдено';
@@ -85,12 +86,14 @@ echo '<script type="text/javascript">var colTexts ='.json_encode($texts).';</scr
 echo "finish";
 
 
-function selDiffPrice($db, $db1c, &$texts) {
+function selDiffPrice($db, $db1c, &$texts, $frst) {
 	foreach ($db1c as $sku => $el_1c) {
 			// print_r($db[$sku]);
+		$class = '';
 		if(isset($texts) && is_array($texts)) $texts[$el_1c['id']] = $el_1c['name'];
+		if(isset($frst) &&  array_key_exists($el_1c['id'], $frst) ) $class='highlight';
 		// if ($el_1c['price'] != $db[$sku]['price'] && !is_null($db[$sku]['price']) && !is_null($el_1c['price'])) {
-			echo '<tr class="elem"><td><input type="checkbox" class="checker visible" name="'.$el_1c['id'].'" id="pr'.$el_1c['id'].'"></td><td>'.$el_1c['name'].'</td><td class="oldprice">'.$el_1c['price'].'</td><td>'.$el_1c['stock_all'].'</td></tr>' . "\n";	
+			echo '<tr class="elem"><td class="'.$class.'"><input type="checkbox" class="checker visible" name="'.$el_1c['id'].'" id="pr'.$el_1c['id'].'"></td><td class="'.$class.'">'.$el_1c['name'].'</td><td class="oldprice '.$class.'">'.$el_1c['price'].'</td><td class="'.$class.'">'.$el_1c['stock_all'].'</td></tr>' . "\n";	
 		// }
 	}
 }

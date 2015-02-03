@@ -75,13 +75,13 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 	
 	if ($result) {
 		if($moveTo == 'go_away') {
-			$query = 'DELETE FROM xml1c_all_products where  id in (\''.$subQ.'\')';
-			$result = mysqli_query($dbMoveConnect, $query);
-			if ($result) {
+			// $query = 'DELETE FROM xml1c_all_products where  id in (\''.$subQ.'\')';
+			// $result = mysqli_query($dbMoveConnect, $query);
+			// if ($result) {
 				echo json_encode(array('elements' => $elements, 'action'=>'remove'));				
-			} else {
-				echo json_encode(array('error'=>'Не удалось удалить скопированные данные'));
-			}
+			// } else {
+				// echo json_encode(array('error'=>'Не удалось удалить скопированные данные'));
+			// }
 		} else {
 			echo json_encode(array('elements' => $elements, 'action'=>'highlight'));
 		}
