@@ -1,6 +1,9 @@
 <?php
+// переключатель для копии/переноса товаров. False - когда обе таблицы находятся в одной базе. True - когда таблицы находятся в разных базах или на разных серверах.
+$remoteDB = false;
 
 if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
+	// for items with diff prices
 	$elements = json_decode($_POST['val'], true);
 
 	$dblocation1 = "localhost";
@@ -30,6 +33,7 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 	}
 
 } else if(array_key_exists('move', $_GET) && $_GET['move'] != '') {
+	// for items that not exist in site DB
 	$moveTo = $_GET['move'];
 
 	if($moveTo != 'go_away' && $moveTo != 'to_first') {
@@ -37,6 +41,7 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 		exit();
 	}
 
+	//Это база товаров 1С
 	$dblocation1 = "localhost";
 	$dbname1 = "xml1cbase";
 	$dbuser1 = "root";
@@ -52,8 +57,22 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 
 	$elements = json_decode($_POST['val'], true);
 	$subQ = implode($elements, '\',\'');
-	$query = 'INSERT INTO ' .$moveTo.' SELECT * FROM xml1c_all_products where id in (\''.$subQ.'\')';
-	$result = mysqli_query($dbMoveConnect, $query);
+
+	if($remoteDB == true) {
+		// на вариант БД на разных серверах - здесь указать данные БД сайта
+		$dblocation2 = "localhost";
+		$dbname2 = "sitebase";
+		$dbuser2 = "root";
+		$dbpasswd2 = "";
+		$testDb = mysqli_connect($dblocation2,$dbuser2,$dbpasswd2, $dbname2);
+		mysqli_query($testDb, "SET NAMES 'utf8'");
+		// diffServersDB (dbMoveConnect(ссылка на подключение к БД 1С), id или массив id, таблица-источник данных, ссылка на подключение к БД сайта, таблица-цель сайта)
+		$result = diffServersDB($dbMoveConnect, $elements, 'xml1c_all_products', $testDb, $moveTo);
+	} else {
+		$query = 'INSERT INTO ' .$moveTo.' SELECT * FROM xml1c_all_products where id in (\''.$subQ.'\')';
+		$result = mysqli_query($dbMoveConnect, $query);		
+	}
+	
 	if ($result) {
 		if($moveTo == 'go_away') {
 			$query = 'DELETE FROM xml1c_all_products where  id in (\''.$subQ.'\')';
@@ -89,6 +108,43 @@ function rowsToAssoc($dbRows, $rName) {
 	}
 
 	return $dbRes;
+}
+
+function diffServersDB(&$dbMoveConnect, $id, $from, &$dbTo, $to) {
+	if (is_array($id)) $whereStr = ' in (\'' .implode($id, "','")  . '\')';
+	else $whereStr = ' = ' . $id;
+
+	$result = mysqli_query($dbMoveConnect,'SELECT * FROM '.$from.' WHERE id ' . $whereStr);
+	$query = array();
+
+	while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
+		$el = json_decode(str_replace('\'', '"', json_encode($row)));
+	    $query[] = '(\''.implode('\',\'', $el).'\')';
+	}
+	//echo 'INSERT INTO `'.$to.'` VALUES '.implode(',', $query).';';
+	return mysqli_query($dbTo,'INSERT INTO `'.$to.'` VALUES '.implode(',', $query).';');
+	/*$file = str_replace('\\', '/', dirname(__FILE__).'\testtesttestcomp.txt');
+	$whereStr = '';
+	if (is_array($id)) $whereStr = ' in (\'' .implode($id, "','")  . '\')';
+	else $whereStr = ' = ' . $id;
+	echo 'SELECT * INTO OUTFILE \'' . $file . '\' FROM xml1c_all_products WHERE id ' . $whereStr;
+	$res = mysqli_query($dbMoveConnect,'SELECT * INTO OUTFILE \'' . $file . '\' FROM xml1c_all_products WHERE id ' . $whereStr);
+	echo 555;
+
+	if ($res) {
+	echo 555;
+		echo 'LOAD DATA LOCAL INFILE \''.$file. '\' INTO TABLE go_away';
+		$res2 = mysqli_query($dbTo,'LOAD DATA LOCAL INFILE \''.$file. '\' INTO TABLE go_away');
+		if ($res) {
+			// unlink($file);
+			return true;
+		} else {
+			return false;
+		}
+	
+	} else {
+		return false;
+	}*/
 }
 
 

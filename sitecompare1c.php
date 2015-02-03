@@ -40,7 +40,8 @@ echo '	<script type="text/javascript" id="js">$(document).ready(function() {
 	// вызов плагина
 	$("table").tablesorter({
 		// устанавливаем сортировку по первой и третьей колонке. по возрастанию
-		sortList: [[0,0],[2,0]]
+		sortList: [[2,0]],
+		headers: {0:{sorter:false}}
 	});
 }); </script> ';
 

@@ -2,19 +2,19 @@ $(document).ready(function ()
 {
 	$('#header').html("<img src='loading1.gif'>");
 
-	// $.post("get_date.php", {  }, function (data) {
-	// 	$('#header').html(data);
-	// });
+	$.post("get_date.php", {  }, function (data) {
+		$('#header').html(data);
+	});
 	
 	$('#res').html("<img src='loading1.gif'>");
 
-	// $.post("get_res.php", {  }, function (data) {
-	// 	$('#res').html(data);
-	// });
+	$.post("get_res.php", {  }, function (data) {
+		$('#res').html(data);
+	});
+
 	$('#select_all').on('click', function(e) {
 		var chkdVal = $(e.target).prop('checked');
 		$('tr.elem.visible .checker').prop('checked', chkdVal);
-		// checker
 	});
 
 	$('#search>input').on('keypress', function(e) {
@@ -30,7 +30,6 @@ $(document).ready(function ()
 			} else {
 				$('tr.elem').removeClass('hide').addClass('visible');
 			}
-			// console.log();
 		}
 		
 	});
@@ -72,11 +71,10 @@ $(document).ready(function ()
     		values[productId] = newPrice;
     	});
     	$.post('changeprices.php?change=yes', 'val='+JSON.stringify(values), function(data) {
-    		if(data['error'] != '') {
+    		if(typeof data['error'] == 'undefined') {
     			$.each(data, function(i, val) {
-    				console.log(val);
 
-    				var $cols = $('#pr'+i).parents('tr').find('td:not(:has(>input))');
+    				var $cols = $('#pr'+i).prop('checked',false).parents('tr').find('td:not(:has(>input))');
     				var $oldPrice = $cols.filter('.oldprice');
     				$oldPrice.text(val['price'] + '/' + $oldPrice.text() );
     				$cols.css({'background-color':'yellow'})
@@ -103,18 +101,16 @@ $(document).ready(function ()
     			return false;
     		}
 
-    		if(data['error'] != '') {
+    		if(typeof data['error'] == 'undefined') {
 
     			if(data['action'] == 'highlight') {
     				$.each(data['elements'], function(i, val) {
-    					console.log(data['elements']);
 
     					var $cols = $('#pr'+val).prop('checked',false).parents('tr').find('td');
 
     					$cols.css({'background-color':'yellow'});    				
     				});
     			} else if(data['action'] == 'remove') {
-    				console.log(data['elements']);
 
     				$.each(data['elements'], function(i, val) {
     					$('#pr'+val).parents('tr').remove();		
@@ -131,7 +127,6 @@ $(document).ready(function ()
 
 function searchText(text) {
 	var res = {};
-	// var sText = colTexts[i];
 	var sLen = text.length - 1;
 	var elems = [];
 
@@ -143,11 +138,7 @@ function searchText(text) {
 	}
 
 	jQuery.each(elems, function(i, val) {
-		// console.log(val);
 			$('#pr'+val).parents('tr').removeClass('hide').addClass('visible');
-			// $('tr').addClass('hide');
-			// $('.checker:checked').prop('checked', false);
-
 	});
 	
 }
