@@ -16,7 +16,7 @@ $(document).ready(function ()
 		var chkdVal = $(e.target).prop('checked');
 		$('tr.elem.visible .checker').prop('checked', chkdVal);
 	});
-	
+
 	$('#clearsearch').on('click', function(e) {
 		e.preventDefault();
 		$('tr.elem').removeClass('hide').addClass('visible');
@@ -97,7 +97,7 @@ $(document).ready(function ()
     	}, 'json');
     });
 
-    $('#to_first, #go_away').on('click', function(e) {
+    $('#to_first, #go_away2').on('click', function(e) {
     	e.preventDefault();
     	var actId = $(this).attr('id');
     	var $el = $(this).parent();

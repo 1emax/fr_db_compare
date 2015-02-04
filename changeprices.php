@@ -36,7 +36,7 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 	// for items that not exist in site DB
 	$moveTo = $_GET['move'];
 
-	if($moveTo != 'go_away' && $moveTo != 'to_first') {
+	if($moveTo != 'go_away2' && $moveTo != 'to_first') {
 		echo json_encode(array('error'=>'Выбрана неправильная база данных'));
 		exit();
 	}
@@ -74,7 +74,7 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 	}
 	
 	if ($result) {
-		if($moveTo == 'go_away') {
+		if($moveTo == 'go_away2') {
 			// $query = 'DELETE FROM xml1c_all_products where  id in (\''.$subQ.'\')';
 			// $result = mysqli_query($dbMoveConnect, $query);
 			// if ($result) {
