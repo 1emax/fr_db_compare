@@ -46,7 +46,7 @@ echo '	<script type="text/javascript" id="js">$(document).ready(function() {
 }); </script> ';
 
 //Ищем все товары на сайте в статусе ВКЛ (active!=NULL)
-$query = "SELECT oc_p.*, oc_d.name FROM sitebase.oc_product as oc_p JOIN sitebase.oc_product_description as oc_d ON oc_p.product_id = oc_d.product_id WHERE oc_p.status = 1";
+$query = "SELECT ps.price as ac_price, ps.date_end as ac_date_end, oc_p.*, oc_d.name FROM sitebase.oc_product as oc_p JOIN sitebase.oc_product_description as oc_d ON oc_p.product_id = oc_d.product_id LEFT JOIN oc_product_special as ps ON oc_p.product_id = ps. product_id AND (date(ps.date_end) = 0 OR date(ps.date_end) > CURDATE()) WHERE oc_p.status = 1";
 $result = mysqli_query($dbconnect1, $query);
 
 if($result)
@@ -56,8 +56,7 @@ if($result)
 	echo '<table border="1" width="100%" class="tablesorter" id="myTable">';
 	echo '<thead><tr><th></th><th>Код1с товара</th><th>Наименование</th><th>Цена на сайте</th><th>Цена в прайсе 1С</th><th>Кол-во на сайте</th></thead><tbody>';
 
-	$db1Sku = rowsToAssoc($result, 'sku');
-
+	$db1Sku = rowsToAssoc($result, 'sku','ac_price', 'ac_date_end');
 	$query_1c = 'SELECT price,old_del,stock_1_perovo, code1c FROM xml1cbase.xml1c_all_products WHERE code1c in (\''.implode(array_keys($db1Sku), "','").'\')';
 
 	$result_1c = mysqli_query($dbconnect2, $query_1c);
@@ -88,19 +87,32 @@ echo "finish";
 function selDiffPrice($db, $db1c) {
 	foreach ($db1c as $sku => $el_1c) {
 			// print_r($db[$sku]);
-
+		if(!is_null($db[$sku]['ac_price'])) $db[$sku]['price'] = $db[$sku]['ac_price'];
 		if ($el_1c['price'] != $db[$sku]['price'] && !is_null($db[$sku]['price']) && !is_null($el_1c['price'])) {
 			echo '<tr><td><input type="checkbox" name="'.$db[$sku]['product_id'].'" id="pr'.$db[$sku]['product_id'].'"></td><td>'.$db[$sku]['name'].'</td><td>'.$db[$sku]['sku'].'</td><td class="oldprice">'.$db[$sku]['price'].'</td><td class="newprice">'.$el_1c['price'].'</td><td>'.$db[$sku]['quantity'].'</td></tr>' . "\n";	
 		}
 	}
 }
 
-function rowsToAssoc($dbRows, $rName) {
+function rowsToAssoc($dbRows, $rName, $ac_price ='', $ac_date_end = false) {
 	$dbRes = array();
-
+	//
 	while ($row = mysqli_fetch_assoc($dbRows))
-	{
-		$dbRes[$row[$rName]] = $row;
+	{	
+		if($ac_date_end !== false && array_key_exists($row[$rName], $dbRes) ) { 
+			if (date($dbRes[$row[$rName]][$ac_date_end]) == 0) continue;
+			if (date($row[$ac_date_end]) == 0) {
+				$dbRes[$row[$rName]] = $row;
+				continue;
+			}
+
+			$maxR = max($row[$ac_date_end], $dbRes[$row[$rName]][$ac_date_end]);
+			if($dbRes[$row[$rName]][$ac_date_end] != $maxR) $dbRes[$row[$rName]] = $row;
+
+		} else {
+			$dbRes[$row[$rName]] = $row;
+		}
+
 	}
 
 	return $dbRes;
