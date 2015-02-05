@@ -57,7 +57,7 @@ if($result)
 
 	$db1Sku = rowsToAssoc($result, 'sku');
 
-	$query_1c = 'SELECT 1c.id, 1c.price,1c.name, 1c.stock_all, 1c.old_del,1c.stock_1_perovo, 1c.code1c FROM xml1cbase.xml1c_all_products as 1c WHERE 1c.code1c IS NOT NULL AND 1c.code1c NOT IN (\''.implode(array_keys($db1Sku), "','").'\') AND 1c.id NOT IN (SELECT id FROM go_away2)';
+	$query_1c = 'SELECT 1c.id, 1c.price,1c.name, 1c.stock_all, 1c.old_del,1c.stock_1_perovo, 1c.code1c FROM xml1cbase.xml1c_all_products as 1c WHERE 1c.code1c IS NOT NULL AND 1c.code1c NOT IN (\''.implode(array_keys($db1Sku), "','").'\') AND 1c.id NOT IN (SELECT id FROM xml1cbase.go_away2)';
 // echo $query_1c;
 	$result_1c = mysqli_query($dbconnect2, $query_1c);
 	$frst = mysqli_query($dbconnect2, 'SELECT t.id FROM to_first as t JOIN xml1c_all_products as 1c ON t.id=1c.id');

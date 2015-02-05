@@ -112,6 +112,7 @@ $(document).ready(function ()
     	}, 'json');
     });
 	
+	// to move item to group
 	$('#go_away2').on('change', function(e) {
 		var valTo = $(this).val();
 
@@ -126,8 +127,29 @@ $(document).ready(function ()
 
     	$.post('changeprices.php?move=go_away2&group='+valTo,'val='+JSON.stringify(values), function(data) {
     		actionWithMovedData(data);    		
-    	});
+    	}, 'json');
 		// console.log(val);
+	});
+
+	//for show individually each group
+	$('#show_go_away2').on('change', function(e){
+		var valTo = $(this).val();
+
+		if (valTo == 'group') return;
+
+		$.post('show_go_away.php?show_group='+valTo,function(data) {
+			$('table>tbody').html(data);
+			$("table").trigger("update"); 
+    	});
+		
+	});
+
+	$('#showall').on('click', function(e) {
+		e.preventDefault();
+		$.post('show_go_away.php?show_group=all',function(data) {
+			$('table>tbody').html(data);
+			$("table").trigger("update"); 
+    	});
 	});
 });
 
