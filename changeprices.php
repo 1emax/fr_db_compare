@@ -1,6 +1,6 @@
 <?php
 // переключатель для копии/переноса товаров. False - когда обе таблицы находятся в одной базе. True - когда таблицы находятся в разных базах или на разных серверах.
-$remoteDB = false;
+$remoteDB = true;
 
 if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 	// for items with diff prices
@@ -58,16 +58,20 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 	$elements = json_decode($_POST['val'], true);
 	$subQ = implode($elements, '\',\'');
 
+	$group_id = false;
+	if(isset($_GET['group']) && $_GET['group'] != '') $group_id = $_GET['group'];
+
 	if($remoteDB == true) {
 		// на вариант БД на разных серверах - здесь указать данные БД сайта
 		$dblocation2 = "localhost";
 		$dbname2 = "sitebase";
 		$dbuser2 = "root";
 		$dbpasswd2 = "";
-		$testDb = mysqli_connect($dblocation2,$dbuser2,$dbpasswd2, $dbname2);
-		mysqli_query($testDb, "SET NAMES 'utf8'");
+		// $testDb = mysqli_connect($dblocation2,$dbuser2,$dbpasswd2, $dbname2);
+		// mysqli_query($testDb, "SET NAMES 'utf8'");
 		// diffServersDB (dbMoveConnect(ссылка на подключение к БД 1С), id или массив id, таблица-источник данных, ссылка на подключение к БД сайта, таблица-цель сайта)
-		$result = diffServersDB($dbMoveConnect, $elements, 'xml1c_all_products', $testDb, $moveTo);
+
+		$result = diffServersDB($dbMoveConnect, $elements, 'xml1c_all_products', $dbMoveConnect, $moveTo, $group_id);
 	} else {
 		$query = 'INSERT INTO ' .$moveTo.' SELECT * FROM xml1c_all_products where id in (\''.$subQ.'\')';
 		$result = mysqli_query($dbMoveConnect, $query);		
@@ -86,7 +90,7 @@ if(array_key_exists('change', $_GET) && $_GET['change'] == 'yes') {
 			echo json_encode(array('elements' => $elements, 'action'=>'highlight'));
 		}
 	} else {
-		echo json_encode(array('error'=>'Не удалось обновить данные'));
+		echo json_encode(array('error'=>mysqli_error($dbMoveConnect)));
 	}
 
 }
@@ -110,17 +114,21 @@ function rowsToAssoc($dbRows, $rName) {
 	return $dbRes;
 }
 
-function diffServersDB(&$dbMoveConnect, $id, $from, &$dbTo, $to) {
+function diffServersDB(&$dbMoveConnect, $id, $from, &$dbTo, $to, $group_id) {
 	if (is_array($id)) $whereStr = ' in (\'' .implode($id, "','")  . '\')';
 	else $whereStr = ' = ' . $id;
 
 	$result = mysqli_query($dbMoveConnect,'SELECT * FROM '.$from.' WHERE id ' . $whereStr);
 	$query = array();
 
+	$grInsertion = $group_id === false ? '' : "','" .$group_id;
+
 	while ($row = mysqli_fetch_array($result, MYSQL_NUM)) {
 		$el = json_decode(str_replace('\'', '"', json_encode($row)));
-	    $query[] = '(\''.implode('\',\'', $el).'\')';
+	    $query[] = '(\''.implode('\',\'', $el). $grInsertion .'\')';
 	}
+
+	// echo implode(',', $query);
 	//echo 'INSERT INTO `'.$to.'` VALUES '.implode(',', $query).';';
 	return mysqli_query($dbTo,'INSERT INTO `'.$to.'` VALUES '.implode(',', $query).';');
 	/*$file = str_replace('\\', '/', dirname(__FILE__).'\testtesttestcomp.txt');

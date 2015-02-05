@@ -80,9 +80,12 @@ if($result)
 }
 
 mysqli_close($dbconnect1);
-mysqli_close($dbconnect2);
-echo '<br><input type="submit" name="to_first" id="to_first" value="Выставить в первую очередь"> &nbsp;&nbsp;<input type="submit" name="go_away2" id="go_away2" value="Не нужные товары"></form><br>';
+echo '<br><input type="submit" name="to_first" id="to_first" value="Выставить в первую очередь"> &nbsp;&nbsp;<select name="go_away2" id="go_away2">';
+echo '<option value="group">В группу:</option>';
+echo showGroups($dbconnect2);
+echo '</select></form><br>';
 echo '<script type="text/javascript">var colTexts ='.json_encode($texts).';</script>';
+mysqli_close($dbconnect2);
 echo "finish";
 
 
@@ -96,6 +99,19 @@ function selDiffPrice($db, $db1c, &$texts, $frst) {
 			echo '<tr class="elem visible"><td class="'.$class.'"><input type="checkbox" class="checker" name="'.$el_1c['id'].'" id="pr'.$el_1c['id'].'"></td><td class="'.$class.'">'.$el_1c['name'].'</td><td class="oldprice '.$class.'">'.$el_1c['price'].'</td><td class="'.$class.'">'.$el_1c['stock_all'].'</td></tr>' . "\n";	
 		// }
 	}
+}
+
+function showGroups(&$db) {
+	$res = mysqli_query($db, 'SELECT DISTINCT id, name from groups');
+	$rows = rowsToAssoc($res, 'id');
+
+	$options = '';
+
+	foreach($rows as $row) {
+		$options .= '<option value="'.$row['id'].'">'.$row['name'].'</option>' . "\n";
+	}
+
+	return $options;
 }
 
 function rowsToAssoc($dbRows, $rName) {

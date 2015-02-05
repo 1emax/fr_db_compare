@@ -97,7 +97,7 @@ $(document).ready(function ()
     	}, 'json');
     });
 
-    $('#to_first, #go_away2').on('click', function(e) {
+    $('#to_first').on('click', function(e) {
     	e.preventDefault();
     	var actId = $(this).attr('id');
     	var $el = $(this).parent();
@@ -108,33 +108,27 @@ $(document).ready(function ()
     	});
 
     	$.post('changeprices.php?move=' + actId, 'val='+JSON.stringify(values), function(data) {
-    		if(data === null) {
-    			alert('Пустой ответ сервера');
-    			return false;
-    		}
-
-    		if(typeof data['error'] == 'undefined') {
-
-    			if(data['action'] == 'highlight') {
-    				$.each(data['elements'], function(i, val) {
-
-    					var $cols = $('#pr'+val).prop('checked',false).parents('tr').find('td');
-
-    					$cols.css({'background-color':'yellow'});    				
-    				});
-    			} else if(data['action'] == 'remove') {
-
-    				$.each(data['elements'], function(i, val) {
-    					$('#pr'+val).parents('tr').remove();		
-    				});
-    			}    			
-
-
-    		} else {
-    			alert(data['error']);
-    		}
+    		actionWithMovedData(data);
     	}, 'json');
     });
+	
+	$('#go_away2').on('change', function(e) {
+		var valTo = $(this).val();
+
+		if (valTo == 'group') return;
+
+		var $el = $(this).parent();
+    	var values = [];
+    	$el.find('input:checked').each(function() {
+    		var productId = $(this).attr('name');
+    		values.push(productId);
+    	});
+
+    	$.post('changeprices.php?move=go_away2&group='+valTo,'val='+JSON.stringify(values), function(data) {
+    		actionWithMovedData(data);    		
+    	});
+		// console.log(val);
+	});
 });
 
 function searchText(text) {
@@ -153,6 +147,34 @@ function searchText(text) {
 			$('#pr'+val).parents('tr').removeClass('hide').addClass('visible');
 	});
 	
+}
+
+function actionWithMovedData(data) {
+	if(data === null) {
+		alert('Пустой ответ сервера');
+		return false;
+	}
+
+	if(typeof data['error'] == 'undefined') {
+
+		if(data['action'] == 'highlight') {
+			$.each(data['elements'], function(i, val) {
+
+				var $cols = $('#pr'+val).prop('checked',false).parents('tr').find('td');
+
+				$cols.css({'background-color':'yellow'});    				
+			});
+		} else if(data['action'] == 'remove') {
+
+			$.each(data['elements'], function(i, val) {
+				$('#pr'+val).parents('tr').remove();		
+			});
+		}    			
+
+
+	} else {
+		alert(data['error']);
+	}
 }
 
 function matchReg(regText) {
