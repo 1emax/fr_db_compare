@@ -107,6 +107,11 @@ $(document).ready(function ()
     		values.push(productId);
     	});
 
+    	if(values.length == 0) {
+    		clientMessage('Не отмечено ни одного поля');
+    		return false;
+    	}
+
     	$.post('changeprices.php?move=' + actId, 'val='+JSON.stringify(values), function(data) {
     		actionWithMovedData(data);
     	}, 'json');
@@ -125,10 +130,21 @@ $(document).ready(function ()
     		values.push(productId);
     	});
 
+    	if(values.length == 0) {
+    		clientMessage('Не отмечено ни одного поля');
+    		return false;
+    	}
+
+
     	$.post('changeprices.php?move=go_away2&group='+valTo,'val='+JSON.stringify(values), function(data) {
     		actionWithMovedData(data);    		
     	}, 'json');
 		// console.log(val);
+	});
+
+	$('#submit_go_away2').on('click', function(e) {
+		e.preventDefault();
+		$('#go_away2').trigger('change');
 	});
 
 	//for show individually each group
@@ -180,6 +196,9 @@ function actionWithMovedData(data) {
 	if(typeof data['error'] == 'undefined') {
 
 		if(data['action'] == 'highlight') {
+			clientMessage('Товары скопированы');
+
+
 			$.each(data['elements'], function(i, val) {
 
 				var $cols = $('#pr'+val).prop('checked',false).parents('tr').find('td');
@@ -187,6 +206,9 @@ function actionWithMovedData(data) {
 				$cols.css({'background-color':'yellow'});    				
 			});
 		} else if(data['action'] == 'remove') {
+
+			
+	    		clientMessage('Товары скопированы');
 
 			$.each(data['elements'], function(i, val) {
 				$('#pr'+val).parents('tr').remove();		
@@ -248,4 +270,9 @@ function GetDelProduct()
 	$.post("get_del_prod.php", {  }, function (data) {
 		$('#prod_list').html(data);
 	});
+}
+
+function clientMessage(text) {
+	$('.actmessage').css('display','block').text(text);
+	setTimeout(function(){$('.actmessage').fadeOut('slow');},5000);
 }

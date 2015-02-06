@@ -83,7 +83,7 @@ mysqli_close($dbconnect1);
 echo '<br><input type="submit" name="to_first" id="to_first" value="Выставить в первую очередь"> &nbsp;&nbsp;<select name="go_away2" id="go_away2">';
 echo '<option value="group">В группу:</option>';
 echo showGroups($dbconnect2);
-echo '</select></form><br>';
+echo '</select> <input type="submit" name="submit_go_away2" id="submit_go_away2" value="Скопировать"> <p class="actmessage" style="display: block;"></p></form><br>';
 echo '<script type="text/javascript">var colTexts ='.json_encode($texts).';</script>';
 mysqli_close($dbconnect2);
 echo "finish";
